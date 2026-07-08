@@ -1,0 +1,93 @@
+<main>
+  <header class="hd">
+    <h1>HADR Monitor</h1>
+    <p class="sub">Current disaster Incidents · USGS earthquakes · <span id="gen" data-ts="1783486200000">2026-07-08T04:50:00.000Z</span></p>
+  </header>
+  <table id="incidents">
+    <thead>
+      <tr><th>Sev</th><th>Hazard</th><th>Where</th><th>Tier</th><th>Status</th><th>Updated</th></tr>
+    </thead>
+    <tbody id="rows">
+      <tr class="row tier-provisional status-active" data-id="INC-0001"><td class="sev">M 5.8</td><td>earthquake</td><td>70 km SW of Sand Point, Alaska <span class="corr">corrected M 6.1→5.8</span></td><td><span class="badge">Provisional</span></td><td>Active</td><td>2026-07-08 04:47Z</td></tr>
+      <tr class="row tier-confirmed status-active" data-id="INC-0002"><td class="sev">M 4.6</td><td>earthquake</td><td>12 km NE of Ridgecrest, CA</td><td><span class="badge">Confirmed</span></td><td>Active</td><td>2026-07-08 04:49Z</td></tr>
+      <tr class="row tier-provisional status-active stale" data-id="INC-0003"><td class="sev">M 3.0</td><td>earthquake</td><td>9 km NNE of Avalon, CA</td><td><span class="badge">Provisional</span></td><td>Active <span class="tag">stale</span></td><td>2026-07-08 03:18Z</td></tr>
+      <tr class="row tier-provisional status-retracted" data-id="INC-0004"><td class="sev">M 5.2</td><td>earthquake</td><td>off the coast of Example</td><td><span class="badge">Provisional</span></td><td>Retracted</td><td>2026-07-08 04:46Z</td></tr>
+    </tbody>
+  </table>
+  <p class="empty" id="empty" hidden>No current Incidents.</p>
+  <footer class="ft">Read-only. Data at best ~1 minute old. <a href="/snapshot.json">JSON snapshot</a>.</footer>
+</main>
+<style>
+  :root { color-scheme: light dark; --line:#8883; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:15px/1.5 system-ui,sans-serif; }
+  main { max-width:960px; margin:0 auto; padding:1.5rem; }
+  .hd h1 { margin:0 0 .1rem; font-size:1.4rem; }
+  .sub { margin:0 0 1rem; opacity:.7; font-size:.85rem; }
+  table { width:100%; border-collapse:collapse; }
+  th,td { text-align:left; padding:.5rem .6rem; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { font-size:.72rem; text-transform:uppercase; letter-spacing:.04em; opacity:.6; }
+  .sev { font-variant-numeric:tabular-nums; font-weight:600; white-space:nowrap; }
+  .badge { font-size:.72rem; padding:.05rem .4rem; border:1px solid var(--line); border-radius:999px; }
+  .tier-confirmed .badge { background:#2e7d3222; border-color:#2e7d3288; }
+  .tier-provisional .badge { opacity:.7; }
+  .status-retracted { opacity:.5; text-decoration:line-through solid 1px; }
+  .status-retracted .badge { text-decoration:none; }
+  .stale { opacity:.6; }
+  .tag { font-size:.7rem; padding:.02rem .35rem; border:1px solid var(--line); border-radius:4px; opacity:.8; }
+  .corr { font-size:.72rem; color:#b26a00; }
+  .empty { opacity:.6; padding:1rem 0; }
+  .ft { margin-top:1.5rem; font-size:.78rem; opacity:.6; }
+  tr { transition: background .6s; }
+  tr.flash { background:#ffd54f44; }
+</style>
+<script id="bootstrap" type="application/json">[{"id":"INC-0001","hazard":"earthquake","tier":"Provisional","status":"Active","stale":false,"severity":5.8,"magnitude":5.8,"place":"70 km SW of Sand Point, Alaska","country":"Alaska","alert":"green","geometry":{"lon":-160.6,"lat":54.85,"depth":24},"firstObserved":1783485900000,"lastObserved":1783486050000,"corrections":[{"field":"magnitude","from":6.1,"to":5.8,"at":1783486050000}],"provenanceCount":2},{"id":"INC-0002","hazard":"earthquake","tier":"Confirmed","status":"Active","stale":false,"severity":4.6,"magnitude":4.6,"place":"12 km NE of Ridgecrest, CA","country":"CA","alert":"green","geometry":{"lon":-117.6,"lat":35.7,"depth":8},"firstObserved":1783486080000,"lastObserved":1783486140000,"corrections":[],"provenanceCount":1},{"id":"INC-0003","hazard":"earthquake","tier":"Provisional","status":"Active","stale":true,"severity":3,"magnitude":3,"place":"9 km NNE of Avalon, CA","country":"CA","alert":null,"geometry":{"lon":-118.3,"lat":33.4,"depth":12.1},"firstObserved":1783480600000,"lastObserved":1783480700000,"corrections":[],"provenanceCount":1},{"id":"INC-0004","hazard":"earthquake","tier":"Provisional","status":"Retracted","stale":false,"severity":5.2,"magnitude":5.2,"place":"off the coast of Example","country":"Example","alert":null,"geometry":{"lon":0,"lat":0,"depth":10},"firstObserved":1783485800000,"lastObserved":1783486000000,"corrections":[],"provenanceCount":1}]</script>
+<script>
+(() => {
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const fmtTime = ts => ts ? new Date(ts).toISOString().replace('T',' ').slice(0,16)+'Z' : '';
+  const where = ci => ci.place || ci.country || 'Location unknown';
+  const sev = ci => ci.magnitude != null ? 'M '+ci.magnitude.toFixed(1) : ci.severity.toFixed(1);
+  const corr = ci => { const m=(ci.corrections||[]).filter(c=>c.field==='magnitude').pop(); return m ? ' <span class="corr">corrected M '+Number(m.from).toFixed(1)+'\u2192'+Number(m.to).toFixed(1)+'</span>' : ''; };
+  const rank = arr => arr.slice().sort((a,b) => {
+    const ar=a.status==='Retracted'?1:0, br=b.status==='Retracted'?1:0;
+    if (ar!==br) return ar-br;
+    if (b.severity!==a.severity) return b.severity-a.severity;
+    return (b.lastObserved||0)-(a.lastObserved||0);
+  });
+  const map = new Map();
+  const boot = JSON.parse(document.getElementById('bootstrap').textContent || '[]');
+  boot.forEach(ci => map.set(ci.id, ci));
+  const tbody = document.getElementById('rows');
+  const empty = document.getElementById('empty');
+  function rowHtml(ci) {
+    const cls = ['row','tier-'+ci.tier.toLowerCase(),'status-'+ci.status.toLowerCase(),ci.stale?'stale':''].filter(Boolean).join(' ');
+    return '<td class="sev">'+sev(ci)+'</td>'
+      + '<td>'+esc(ci.hazard)+'</td>'
+      + '<td>'+esc(where(ci))+corr(ci)+'</td>'
+      + '<td><span class="badge">'+esc(ci.tier)+'</span></td>'
+      + '<td>'+esc(ci.status)+(ci.stale?' <span class="tag">stale</span>':'')+'</td>'
+      + '<td>'+esc(fmtTime(ci.lastObserved))+'</td>';
+  }
+  function render(flashId) {
+    const items = rank([...map.values()]);
+    tbody.replaceChildren();
+    for (const ci of items) {
+      const tr = document.createElement('tr');
+      tr.className = ['row','tier-'+ci.tier.toLowerCase(),'status-'+ci.status.toLowerCase(),ci.stale?'stale':''].filter(Boolean).join(' ');
+      tr.dataset.id = ci.id;
+      tr.innerHTML = rowHtml(ci);
+      if (ci.id === flashId) { tr.classList.add('flash'); setTimeout(() => tr.classList.remove('flash'), 1200); }
+      tbody.appendChild(tr);
+    }
+    empty.hidden = items.length > 0;
+  }
+  render();
+  const es = new EventSource('/events');
+  es.addEventListener('incident', e => {
+    const diff = JSON.parse(e.data);
+    map.set(diff.incident.id, diff.incident);
+    render(diff.incident.id);
+  });
+})();
+</script>

@@ -1,0 +1,97 @@
+{
+  "generatedAt": 1783486200000,
+  "count": 4,
+  "incidents": [
+    {
+      "id": "INC-0001",
+      "hazard": "earthquake",
+      "tier": "Provisional",
+      "status": "Active",
+      "stale": false,
+      "severity": 5.8,
+      "magnitude": 5.8,
+      "place": "70 km SW of Sand Point, Alaska",
+      "country": "Alaska",
+      "alert": "green",
+      "geometry": {
+        "lon": -160.6,
+        "lat": 54.85,
+        "depth": 24
+      },
+      "firstObserved": 1783485900000,
+      "lastObserved": 1783486050000,
+      "corrections": [
+        {
+          "field": "magnitude",
+          "from": 6.1,
+          "to": 5.8,
+          "at": 1783486050000
+        }
+      ],
+      "provenanceCount": 2
+    },
+    {
+      "id": "INC-0002",
+      "hazard": "earthquake",
+      "tier": "Confirmed",
+      "status": "Active",
+      "stale": false,
+      "severity": 4.6,
+      "magnitude": 4.6,
+      "place": "12 km NE of Ridgecrest, CA",
+      "country": "CA",
+      "alert": "green",
+      "geometry": {
+        "lon": -117.6,
+        "lat": 35.7,
+        "depth": 8
+      },
+      "firstObserved": 1783486080000,
+      "lastObserved": 1783486140000,
+      "corrections": [],
+      "provenanceCount": 1
+    },
+    {
+      "id": "INC-0003",
+      "hazard": "earthquake",
+      "tier": "Provisional",
+      "status": "Active",
+      "stale": true,
+      "severity": 3,
+      "magnitude": 3,
+      "place": "9 km NNE of Avalon, CA",
+      "country": "CA",
+      "alert": null,
+      "geometry": {
+        "lon": -118.3,
+        "lat": 33.4,
+        "depth": 12.1
+      },
+      "firstObserved": 1783480600000,
+      "lastObserved": 1783480700000,
+      "corrections": [],
+      "provenanceCount": 1
+    },
+    {
+      "id": "INC-0004",
+      "hazard": "earthquake",
+      "tier": "Provisional",
+      "status": "Retracted",
+      "stale": false,
+      "severity": 5.2,
+      "magnitude": 5.2,
+      "place": "off the coast of Example",
+      "country": "Example",
+      "alert": null,
+      "geometry": {
+        "lon": 0,
+        "lat": 0,
+        "depth": 10
+      },
+      "firstObserved": 1783485800000,
+      "lastObserved": 1783486000000,
+      "corrections": [],
+      "provenanceCount": 1
+    }
+  ]
+}
