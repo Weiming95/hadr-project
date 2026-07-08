@@ -83,8 +83,13 @@
   const es = new EventSource('/events');
   es.addEventListener('incident', e => {
     const diff = JSON.parse(e.data);
-    map.set(diff.incident.id, diff.incident);
-    render(diff.incident.id);
+    const id = diff.incident.id;
+    // On connect the server replays every current incident as op:'add'; those
+    // are already bootstrapped, so don't flash them. Flash only a genuine
+    // change: an update, or an add for an id we hadn't seen.
+    const flash = (diff.op === 'update' || !map.has(id)) ? id : null;
+    map.set(id, diff.incident);
+    render(flash);
   });
 })();
 </script>

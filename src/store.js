@@ -18,12 +18,13 @@ CREATE TABLE IF NOT EXISTS observations (
   source_ids   TEXT NOT NULL,         -- JSON array of source-native ids
   preferred_id TEXT,
   hazard       TEXT NOT NULL,
-  event_time   BIGINT NOT NULL,       -- epoch ms
+  event_time   BIGINT,                -- epoch ms; may be null on a stripped deletion
   lon          DOUBLE PRECISION,
   lat          DOUBLE PRECISION,
   depth        DOUBLE PRECISION,
   magnitude    DOUBLE PRECISION,
   place        TEXT,
+  country      TEXT,
   alert        TEXT,
   feed_status  TEXT,                  -- automatic | reviewed | deleted
   tsunami      INTEGER,
@@ -76,12 +77,12 @@ export function openStore({ path = ':memory:' } = {}) {
     insertObs: db.prepare(`
       INSERT INTO observations
         (incident_id, source, source_ids, preferred_id, hazard, event_time,
-         lon, lat, depth, magnitude, place, alert, feed_status, tsunami,
+         lon, lat, depth, magnitude, place, country, alert, feed_status, tsunami,
          updated, derived, raw, ingested_at)
       VALUES
         (@incident_id, @source, @source_ids, @preferred_id, @hazard, @event_time,
-         @lon, @lat, @depth, @magnitude, @place, @alert, @feed_status, @tsunami,
-         @updated, @derived, @raw, @ingested_at)
+         @lon, @lat, @depth, @magnitude, @place, @country, @alert, @feed_status,
+         @tsunami, @updated, @derived, @raw, @ingested_at)
     `),
     obsForIncident: db.prepare(`
       SELECT * FROM observations WHERE incident_id = ? ORDER BY event_time, seq
@@ -135,6 +136,7 @@ export function openStore({ path = ':memory:' } = {}) {
         depth: obs.geometry?.depth ?? null,
         magnitude: obs.magnitude ?? null,
         place: obs.place ?? null,
+        country: obs.country ?? null,
         alert: obs.alert ?? null,
         feed_status: obs.feedStatus ?? null,
         tsunami: obs.tsunami ? 1 : 0,
@@ -198,6 +200,7 @@ function rowToObservation(r) {
     geometry: { lon: r.lon, lat: r.lat, depth: r.depth },
     magnitude: r.magnitude,
     place: r.place,
+    country: r.country,
     alert: r.alert,
     feedStatus: r.feed_status,
     tsunami: !!r.tsunami,

@@ -56,11 +56,14 @@ export async function tick({ store, httpGet, now }) {
     });
     view.updatedAt = now;
 
+    // Always persist the reprojection — even when the display signature is
+    // unchanged, the appended observations may have grown `sourceIds` or moved
+    // `firstObserved`, and the stored id-set is what the correlator reads next
+    // tick. Only the SSE diff is gated on a visible change, so a quiet tick
+    // still broadcasts nothing.
+    store.upsertIncident(view);
     const op = prior == null ? 'add' : signature(view) !== signature(prior) ? 'update' : null;
-    if (op) {
-      store.upsertIncident(view);
-      diffs.push({ op, incident: view });
-    }
+    if (op) diffs.push({ op, incident: view });
   }
 
   store.setMeta('incident_seq', String(counter));

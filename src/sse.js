@@ -16,6 +16,10 @@ export function createSseHub() {
       res.write('retry: 3000\n\n'); // ask the browser to reconnect after 3s
       clients.add(res);
       res.on('close', () => clients.delete(res));
+      // A broken pipe surfaces as an async 'error' event, not a sync throw;
+      // without this listener it would become an uncaught exception and take
+      // the whole process down.
+      res.on('error', () => clients.delete(res));
       return () => clients.delete(res);
     },
 

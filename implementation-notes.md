@@ -65,6 +65,49 @@ pipeline — none used this slice), 0006 (SQLite WAL, Postgres-portable), 0007
   after the last comma as a best-effort location hint (no ISO code). GDACS
   supplies real ISO countries in Slice 2.
 
+### Review fixes (post-PR self-review)
+
+A multi-angle code review ran against the slice (the GitHub `claude-review`
+action was a no-op — its `ANTHROPIC_API_KEY` secret is unset — so the review was
+run locally instead). Bugs found and fixed:
+
+- **SSE write could crash the process.** A broken client socket emits an async
+  `'error'` event, which the synchronous `try/catch` in `broadcast` never caught
+  → uncaught exception. Added an `'error'` listener in `sse.js` `subscribe`.
+- **`</script>` breakout in the embedded bootstrap JSON.** `JSON.stringify` does
+  not escape `<`/`>`, so a feed-supplied `</script>` in a `place` string could
+  break out of the tag (XSS / dead client). `render.js` now escapes `<`, `>`,
+  U+2028/9 to `\uXXXX` before embedding. Verified against a hostile payload.
+- **Quiet-tick upsert skipped persistence.** The old code skipped
+  `upsertIncident` when the display signature was unchanged — which also dropped
+  newly-accumulated `sourceIds`/`firstObserved`, so a later observation sharing
+  only a new id could spawn a duplicate Incident. `pipeline.js` now always
+  persists a touched Incident; only the SSE *diff* is gated on a visible change.
+- **Deletion with stripped timestamps was missed.** FDSN `includedeleted`
+  records can arrive with null `time`/`updated`; the projector's sort key
+  `?? 0` sent them to the front, so the deletion was never `latest` and the
+  Incident stayed Active. Now falls back to `ingestedAt` (deterministic, part of
+  the log). Also made `observations.event_time` nullable so such a record
+  inserts. Regression test added.
+- **`country` was derived but never persisted** → always null after reload. Added
+  the `country` column to `observations` + read-back. Regression test added.
+- **Empty `ids` would mint a new Incident every tick.** `usgs.js` now falls back
+  to the preferred id when `ids` is empty.
+- **`PORT=""` bound a random port** (`Number('')===0`). `main.js` uses
+  `Number(PORT) || 8080`.
+- **A local publish-write failure inflated the feed backoff.** `scheduler.js`
+  now clears backoff on feed success and publishes in its own try; also reuses a
+  single `now` so the disk artefacts and SSE payloads share a timestamp.
+- **Replay-on-connect flashed every row.** The client now flashes only genuine
+  changes (update, or an add for an unseen id), not the bootstrap replay.
+
+Known limitations left for later slices (not bugs in scope): the single-source
+correlator does not merge two pre-existing Incidents bridged by one observation
+(explicit merge/split is Slice 2); SSE has no per-client backpressure cap
+(single-node, few clients — ADR-0001); the client rebuilds the full table on each
+connect event (O(N) per event) and does not recompute `stale` on a timer between
+diffs.
+
 ### Deviations
 
 - **Dedup demonstrated via preferred-id promotion, not two simultaneous feed

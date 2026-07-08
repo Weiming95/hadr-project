@@ -58,7 +58,7 @@ export function renderSnapshot(incidents, now) {
 export function renderDashboardHtml(incidents, now) {
   const items = rankIncidents(incidents.map((i) => toClientIncident(i, now)));
   const rows = items.map(rowHtml).join('\n');
-  const bootstrap = JSON.stringify(items);
+  const bootstrap = jsonForScript(items);
   const generated = new Date(now).toISOString();
 
   return `<main>
@@ -118,6 +118,18 @@ function esc(s) {
   return String(s ?? '').replace(/[&<>"']/g, (c) => (
     { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
   ));
+}
+
+// Safe to embed inside an HTML <script>: JSON.stringify does not escape `<`,
+// `>` or line/paragraph separators, so a feed-supplied "</script>" (or U+2028)
+// would break out of the tag. Escape them to their \uXXXX forms — still valid
+// JSON that JSON.parse reads back identically.
+function jsonForScript(value) {
+  return JSON.stringify(value)
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
 }
 
 function styleTag() {
@@ -194,8 +206,13 @@ function clientScript() {
   const es = new EventSource('/events');
   es.addEventListener('incident', e => {
     const diff = JSON.parse(e.data);
-    map.set(diff.incident.id, diff.incident);
-    render(diff.incident.id);
+    const id = diff.incident.id;
+    // On connect the server replays every current incident as op:'add'; those
+    // are already bootstrapped, so don't flash them. Flash only a genuine
+    // change: an update, or an add for an id we hadn't seen.
+    const flash = (diff.op === 'update' || !map.has(id)) ? id : null;
+    map.set(id, diff.incident);
+    render(flash);
   });
 })();
 </script>`;

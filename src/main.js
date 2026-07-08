@@ -18,7 +18,9 @@ import { createScheduler } from './scheduler.js';
 import { openStore } from './store.js';
 import { createSseHub } from './sse.js';
 
-const PORT = Number(process.env.PORT ?? 8080);
+// `Number('')` is 0 and `Number('abc')` is NaN, both of which would bind a
+// random/invalid port; `|| 8080` falls back for any non-positive/NaN value.
+const PORT = Number(process.env.PORT) || 8080;
 const DB_PATH = process.env.HADR_DB ?? './data/hadr.db';
 const PUBLISH_DIR = process.env.HADR_PUBLISH ?? process.cwd();
 const FIXTURES = process.env.HADR_FIXTURES ?? null;

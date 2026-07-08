@@ -136,3 +136,40 @@ test('a quiet tick emits no change-diffs', async () => {
   assert.equal(perTick[2].diffs.length, 1, 'tick 3: A retracted only');
   assert.equal(perTick[3].diffs.length, 0, 'tick 4: quiet → nothing broadcast');
 });
+
+test('country is persisted through the store (not lost on projection reload)', async () => {
+  const { store } = await runScenario();
+  const quakeA = store.allIncidents().find((x) => x.sourceIds.includes('ci9999'));
+  // USGS gives no ISO code; we keep the free-text tail of `place`.
+  assert.equal(quakeA.country, 'Alaska');
+  store.close();
+});
+
+// Regression: FDSN `includedeleted` deletion records can arrive with their time
+// fields stripped (null time/updated). Such a record must still be recognised as
+// the latest word and retract the Incident — not sort to the front and be missed.
+test('deletion with null timestamps still retracts the Incident', async () => {
+  const store = openStore({ path: ':memory:' });
+  const eq = (over) => ({
+    type: 'Feature', id: 'zz1', geometry: { type: 'Point', coordinates: [10, 20, 5] },
+    properties: { mag: 5.0, place: 'Somewhere', time: 1000, updated: 1000, status: 'automatic', ids: ',zz1,', ...over },
+  });
+  const ticks = [
+    { summary: { features: [eq()] }, fdsn: null },
+    // Quake gone from summary; reconcile reports it deleted with NO timestamps.
+    { summary: { features: [] }, fdsn: { features: [eq({ status: 'deleted', time: null, updated: null })] } },
+  ];
+  let i = 0;
+  const httpGet = async (url) => {
+    const t = ticks[i];
+    if (url.includes('summary/')) return { status: 200, headers: {}, body: JSON.stringify(t.summary) };
+    if (!t.fdsn) return { status: 204, headers: {}, body: '' };
+    return { status: 200, headers: {}, body: JSON.stringify(t.fdsn) };
+  };
+  for (i = 0; i < ticks.length; i++) await tick({ store, httpGet, now: 5000 + i });
+
+  const incident = store.allIncidents().find((x) => x.sourceIds.includes('zz1'));
+  assert.ok(incident, 'the deleted quake is still present');
+  assert.equal(incident.status, Status.RETRACTED, 'retracted despite stripped timestamps');
+  store.close();
+});

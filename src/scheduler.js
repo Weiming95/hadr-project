@@ -36,11 +36,21 @@ export function createScheduler({
           incident: toClientIncident(diff.incident, now),
         });
       }
-      if (publishDir) await publish(store, clock(), publishDir);
 
+      // The feed poll succeeded — clear backoff regardless of what publishing
+      // does. A local write failure (e.g. a read-only publish dir) must not
+      // throttle polling of a healthy Source. Reuse `now` so the published
+      // artefacts and the SSE payloads agree on their timestamp.
       backoff = 0;
       if (diffs.length || observations) {
         logger.log(`[tick] ${observations} obs, ${diffs.length} change(s)`);
+      }
+      if (publishDir) {
+        try {
+          await publish(store, now, publishDir);
+        } catch (err) {
+          logger.error(`[publish] ${err.message}`);
+        }
       }
     } catch (err) {
       backoff = Math.min(backoff + 1, 6);

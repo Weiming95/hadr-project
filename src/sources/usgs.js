@@ -95,9 +95,14 @@ function parseFeatures(body) {
 export function normalizeFeature(feature, ingestedAt) {
   const p = feature.properties ?? {};
   const [lon = null, lat = null, depth = null] = feature.geometry?.coordinates ?? [];
+  // Key on `ids` membership; if the feed ever omits `ids`, fall back to the
+  // preferred id so the event still correlates (an empty id-set would never
+  // match and would mint a fresh Incident on every poll).
+  const parsed = parseIds(p.ids);
+  const sourceIds = parsed.length ? parsed : (feature.id ? [feature.id] : []);
   return {
     source: 'usgs',
-    sourceIds: parseIds(p.ids),
+    sourceIds,
     preferredId: feature.id ?? null,
     hazard: Hazard.EARTHQUAKE,
     eventTime: p.time ?? null,

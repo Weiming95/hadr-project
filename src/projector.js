@@ -29,10 +29,13 @@ export function project(incidentId, observations, { priorTier } = {}) {
   }
 
   // Chronological by the source's own view of when it last spoke, then by
-  // append order — a stable total order independent of insertion timing.
+  // append order. Fall back to `ingestedAt` (not 0) so a deletion record with
+  // stripped time fields still sorts to the end and is recognised as the latest
+  // word — otherwise a withdrawal would sort to the front and be missed.
+  // `ingestedAt` is part of the immutable log, so ordering stays deterministic.
+  const orderKey = (o) => o.updated ?? o.eventTime ?? o.ingestedAt ?? 0;
   const ordered = [...observations].sort(
-    (a, b) => (a.updated ?? a.eventTime ?? 0) - (b.updated ?? b.eventTime ?? 0)
-      || (a.seq ?? 0) - (b.seq ?? 0),
+    (a, b) => orderKey(a) - orderKey(b) || (a.seq ?? 0) - (b.seq ?? 0),
   );
   const latest = ordered[ordered.length - 1];
 
