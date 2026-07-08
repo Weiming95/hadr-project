@@ -1,0 +1,14 @@
+{
+  "name": "hadr-monitor",
+  "version": "0.1.0",
+  "private": true,
+  "description": "HADR Monitor — fuses public disaster feeds into a trustworthy live situation report. Slice 1: USGS end-to-end.",
+  "type": "module",
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "scripts": {
+    "start": "node src/main.js",
+    "test": "node --test"
+  }
+}

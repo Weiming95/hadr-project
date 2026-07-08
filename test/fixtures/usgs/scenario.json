@@ -1,0 +1,126 @@
+{
+  "_doc": "Recorded-style USGS payloads driving the primary pipeline seam. One entry per tick. `summary` is the all_day.geojson body; `fdsn` is the includedeleted reconciliation body (null when not fetched / 204). Field shapes mirror a live capture (feeds/usgs.md). Fixed timestamps keep the suite deterministic and offline.",
+  "base": 1783486000000,
+  "ticks": [
+    {
+      "note": "Tick 1 — first poll. Quake A (regional solution ci9999, automatic, M6.1) and Quake B (reviewed, M4.6). No reconcile on the first poll.",
+      "now": 1783486000000,
+      "summary": {
+        "type": "FeatureCollection",
+        "metadata": { "generated": 1783486000000, "title": "USGS All Earthquakes, Past Day", "count": 2 },
+        "features": [
+          {
+            "type": "Feature",
+            "properties": { "mag": 6.1, "place": "68 km SW of Sand Point, Alaska", "time": 1783485700000, "updated": 1783485900000, "alert": "orange", "status": "automatic", "tsunami": 0, "sig": 573, "ids": ",ci9999,", "type": "earthquake", "title": "M 6.1 - 68 km SW of Sand Point, Alaska" },
+            "geometry": { "type": "Point", "coordinates": [-160.5, 54.9, 25.0] },
+            "id": "ci9999"
+          },
+          {
+            "type": "Feature",
+            "properties": { "mag": 4.6, "place": "12 km NE of Ridgecrest, CA", "time": 1783485600000, "updated": 1783485650000, "alert": "green", "status": "reviewed", "tsunami": 0, "sig": 326, "ids": ",nc111,", "type": "earthquake", "title": "M 4.6 - 12 km NE of Ridgecrest, CA" },
+            "geometry": { "type": "Point", "coordinates": [-117.6, 35.7, 8.0] },
+            "id": "nc111"
+          }
+        ]
+      },
+      "fdsn": null
+    },
+    {
+      "note": "Tick 2 — Quake A's preferred id has changed (ci9999 -> us2000xyz) and its magnitude has been revised 6.1 -> 5.8. Keyed on ids membership (shared ci9999), it stays the SAME Incident. The reconcile feed echoes the revised A, proving summary+FDSN records collapse. New Quake C appears.",
+      "now": 1783486060000,
+      "summary": {
+        "type": "FeatureCollection",
+        "metadata": { "generated": 1783486060000, "title": "USGS All Earthquakes, Past Day", "count": 3 },
+        "features": [
+          {
+            "type": "Feature",
+            "properties": { "mag": 5.8, "place": "70 km SW of Sand Point, Alaska", "time": 1783485700000, "updated": 1783486050000, "alert": "green", "status": "automatic", "tsunami": 0, "sig": 518, "ids": ",ci9999,us2000xyz,", "type": "earthquake", "title": "M 5.8 - 70 km SW of Sand Point, Alaska" },
+            "geometry": { "type": "Point", "coordinates": [-160.6, 54.85, 24.0] },
+            "id": "us2000xyz"
+          },
+          {
+            "type": "Feature",
+            "properties": { "mag": 4.6, "place": "12 km NE of Ridgecrest, CA", "time": 1783485600000, "updated": 1783485650000, "alert": "green", "status": "reviewed", "tsunami": 0, "sig": 326, "ids": ",nc111,", "type": "earthquake", "title": "M 4.6 - 12 km NE of Ridgecrest, CA" },
+            "geometry": { "type": "Point", "coordinates": [-117.6, 35.7, 8.0] },
+            "id": "nc111"
+          },
+          {
+            "type": "Feature",
+            "properties": { "mag": 3.0, "place": "9 km NNE of Avalon, CA", "time": 1783486000000, "updated": 1783486010000, "alert": null, "status": "automatic", "tsunami": 0, "sig": 138, "ids": ",ci222,", "type": "earthquake", "title": "M 3.0 - 9 km NNE of Avalon, CA" },
+            "geometry": { "type": "Point", "coordinates": [-118.3, 33.4, 12.1] },
+            "id": "ci222"
+          }
+        ]
+      },
+      "fdsn": {
+        "type": "FeatureCollection",
+        "metadata": { "generated": 1783486060000, "count": 1 },
+        "features": [
+          {
+            "type": "Feature",
+            "properties": { "mag": 5.8, "place": "70 km SW of Sand Point, Alaska", "time": 1783485700000, "updated": 1783486050000, "alert": "green", "status": "automatic", "tsunami": 0, "sig": 518, "ids": ",ci9999,us2000xyz,", "type": "earthquake", "title": "M 5.8 - 70 km SW of Sand Point, Alaska" },
+            "geometry": { "type": "Point", "coordinates": [-160.6, 54.85, 24.0] },
+            "id": "us2000xyz"
+          }
+        ]
+      }
+    },
+    {
+      "note": "Tick 3 — Quake A has been withdrawn: it is GONE from the summary feed, and the reconcile feed reports it with status=deleted. The Incident must become Retracted, not vanish.",
+      "now": 1783486120000,
+      "summary": {
+        "type": "FeatureCollection",
+        "metadata": { "generated": 1783486120000, "title": "USGS All Earthquakes, Past Day", "count": 2 },
+        "features": [
+          {
+            "type": "Feature",
+            "properties": { "mag": 4.6, "place": "12 km NE of Ridgecrest, CA", "time": 1783485600000, "updated": 1783485650000, "alert": "green", "status": "reviewed", "tsunami": 0, "sig": 326, "ids": ",nc111,", "type": "earthquake", "title": "M 4.6 - 12 km NE of Ridgecrest, CA" },
+            "geometry": { "type": "Point", "coordinates": [-117.6, 35.7, 8.0] },
+            "id": "nc111"
+          },
+          {
+            "type": "Feature",
+            "properties": { "mag": 3.0, "place": "9 km NNE of Avalon, CA", "time": 1783486000000, "updated": 1783486010000, "alert": null, "status": "automatic", "tsunami": 0, "sig": 138, "ids": ",ci222,", "type": "earthquake", "title": "M 3.0 - 9 km NNE of Avalon, CA" },
+            "geometry": { "type": "Point", "coordinates": [-118.3, 33.4, 12.1] },
+            "id": "ci222"
+          }
+        ]
+      },
+      "fdsn": {
+        "type": "FeatureCollection",
+        "metadata": { "generated": 1783486120000, "count": 1 },
+        "features": [
+          {
+            "type": "Feature",
+            "properties": { "mag": 5.8, "place": "70 km SW of Sand Point, Alaska", "time": 1783485700000, "updated": 1783486110000, "alert": "green", "status": "deleted", "tsunami": 0, "sig": 518, "ids": ",ci9999,us2000xyz,", "type": "earthquake", "title": "M 5.8 - 70 km SW of Sand Point, Alaska" },
+            "geometry": { "type": "Point", "coordinates": [-160.6, 54.85, 24.0] },
+            "id": "us2000xyz"
+          }
+        ]
+      }
+    },
+    {
+      "note": "Tick 4 — a quiet poll. Nothing changed: summary is identical to tick 3, reconcile is empty. Must emit zero change-diffs.",
+      "now": 1783486180000,
+      "summary": {
+        "type": "FeatureCollection",
+        "metadata": { "generated": 1783486120000, "title": "USGS All Earthquakes, Past Day", "count": 2 },
+        "features": [
+          {
+            "type": "Feature",
+            "properties": { "mag": 4.6, "place": "12 km NE of Ridgecrest, CA", "time": 1783485600000, "updated": 1783485650000, "alert": "green", "status": "reviewed", "tsunami": 0, "sig": 326, "ids": ",nc111,", "type": "earthquake", "title": "M 4.6 - 12 km NE of Ridgecrest, CA" },
+            "geometry": { "type": "Point", "coordinates": [-117.6, 35.7, 8.0] },
+            "id": "nc111"
+          },
+          {
+            "type": "Feature",
+            "properties": { "mag": 3.0, "place": "9 km NNE of Avalon, CA", "time": 1783486000000, "updated": 1783486010000, "alert": null, "status": "automatic", "tsunami": 0, "sig": 138, "ids": ",ci222,", "type": "earthquake", "title": "M 3.0 - 9 km NNE of Avalon, CA" },
+            "geometry": { "type": "Point", "coordinates": [-118.3, 33.4, 12.1] },
+            "id": "ci222"
+          }
+        ]
+      },
+      "fdsn": { "type": "FeatureCollection", "metadata": { "count": 0 }, "features": [] }
+    }
+  ]
+}

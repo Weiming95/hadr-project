@@ -5,6 +5,12 @@ reports/
 # dashboard.html is the exception: it is the product, and it is committed.
 !dashboard.html
 
+# Runtime state — the event-sourced SQLite store (WAL). Rebuildable; never committed.
+data/
+*.db
+*.db-wal
+*.db-shm
+
 # Secrets stay out of the repo and out of the agent's context.
 .env
 .env.*
